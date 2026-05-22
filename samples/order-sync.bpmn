@@ -27,7 +27,7 @@
   <bpmn:error id="errRespMap" name="REST_ERROR_RESPONSE_MAPPING"
               errorCode="REST_ERROR_RESPONSE_MAPPING"/>
 
-  <bpmn:process id="orderSync" isExecutable="true">
+  <bpmn:process id="orderSync" isExecutable="true" camunda:historyTimeToLive="P30D">
 
     <bpmn:startEvent id="pStart"/>
     <bpmn:sequenceFlow id="f1" sourceRef="pStart" targetRef="callOrderApi"/>

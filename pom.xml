@@ -84,8 +84,8 @@
     <!--
       Process-level test stack (test scope): an in-memory CIB seven engine, the
       Connect process-engine plugin that parses and runs <camunda:connector>,
-      the JUnit 5 ProcessEngineExtension, the BPMN assertions, and H2 as the
-      in-memory database.
+      and H2 as the in-memory database. The test drives the engine through its
+      own API, so no JUnit-extension or assertion library is needed.
     -->
     <dependency>
       <groupId>org.cibseven.bpm</groupId>
@@ -96,18 +96,6 @@
     <dependency>
       <groupId>org.cibseven.bpm</groupId>
       <artifactId>cibseven-engine-plugin-connect</artifactId>
-      <version>${cibseven.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.cibseven.bpm</groupId>
-      <artifactId>cibseven-bpm-junit5</artifactId>
-      <version>${cibseven.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.cibseven.bpm</groupId>
-      <artifactId>cibseven-bpm-assert</artifactId>
       <version>${cibseven.version}</version>
       <scope>test</scope>
     </dependency>

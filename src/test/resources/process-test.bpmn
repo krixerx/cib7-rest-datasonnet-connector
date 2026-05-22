@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Minimal wrapper-subprocess process for the connector's process-level test.
+  The connector service task is synchronous (no asyncBefore) so an instance
+  runs fully on startProcessInstanceByKey. Inputs are variable-driven so one
+  process covers every test scenario. No <bpmndi:> — the engine does not need it.
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="rest-datasonnet-process-test"
+                  targetNamespace="http://cibseven.org/community/test">
+
+  <bpmn:error id="err404" name="REST_ERROR_404" errorCode="REST_ERROR_404"/>
+
+  <bpmn:process id="restTest" isExecutable="true" camunda:historyTimeToLive="P30D">
+
+    <bpmn:startEvent id="start"/>
+    <bpmn:sequenceFlow id="f1" sourceRef="start" targetRef="callApi"/>
+
+    <bpmn:subProcess id="callApi">
+      <bpmn:startEvent id="s1"/>
+      <bpmn:sequenceFlow id="f2" sourceRef="s1" targetRef="invoke"/>
+
+      <bpmn:serviceTask id="invoke">
+        <bpmn:extensionElements>
+          <camunda:connector>
+            <camunda:connectorId>rest-datasonnet</camunda:connectorId>
+            <camunda:inputOutput>
+              <camunda:inputParameter name="url">${url}</camunda:inputParameter>
+              <camunda:inputParameter name="method">${method}</camunda:inputParameter>
+              <camunda:inputParameter name="source">${source}</camunda:inputParameter>
+              <camunda:inputParameter name="businessErrorStatuses">${businessErrorStatuses}</camunda:inputParameter>
+              <camunda:outputParameter name="restOutcome">${restOutcome}</camunda:outputParameter>
+              <camunda:outputParameter name="restErrorCode">${restErrorCode}</camunda:outputParameter>
+            </camunda:inputOutput>
+          </camunda:connector>
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+
+      <bpmn:sequenceFlow id="f3" sourceRef="invoke" targetRef="gw"/>
+      <bpmn:exclusiveGateway id="gw"/>
+      <bpmn:sequenceFlow id="f4" sourceRef="gw" targetRef="subEnd">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+          >${restOutcome == 'SUCCESS'}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="f5" sourceRef="gw" targetRef="end404">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+          >${restOutcome == 'BUSINESS_ERROR'}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+
+      <bpmn:endEvent id="subEnd"/>
+      <bpmn:endEvent id="end404">
+        <bpmn:errorEventDefinition id="ed404" errorRef="err404"/>
+      </bpmn:endEvent>
+    </bpmn:subProcess>
+
+    <bpmn:sequenceFlow id="f6" sourceRef="callApi" targetRef="done"/>
+    <bpmn:endEvent id="done"/>
+
+    <bpmn:boundaryEvent id="catch404" attachedToRef="callApi">
+      <bpmn:errorEventDefinition id="bed404" errorRef="err404"/>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="f7" sourceRef="catch404" targetRef="handledNotFound"/>
+    <bpmn:endEvent id="handledNotFound"/>
+
+  </bpmn:process>
+</bpmn:definitions>

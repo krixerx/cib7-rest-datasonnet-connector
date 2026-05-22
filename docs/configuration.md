@@ -62,6 +62,12 @@ there is no response and no output variables (the engine raises an incident).
 | `restError` | BUSINESS_ERROR, RESPONSE_MAPPING_FAILED | The mapped error object, or the mapping error detail. |
 | `restRawResponse` | RESPONSE_MAPPING_FAILED | The raw 2xx body, preserved for manual recovery. |
 
+The **When** column is when a parameter carries a meaningful value. Every row is
+always present in the connector's response — the ones that do not apply to the
+current outcome are `null`. So a `<camunda:outputParameter>` can map any of them
+without the modeler knowing the outcome in advance; it just resolves to `null`
+when not applicable.
+
 ---
 
 ## 3. Retry & timeout model

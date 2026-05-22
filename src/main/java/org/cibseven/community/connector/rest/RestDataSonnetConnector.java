@@ -84,9 +84,16 @@ public class RestDataSonnetConnector
                 + ", which is not a declared business status");
         }
 
+        // Seed every output key so a <camunda:outputParameter> expression
+        // resolves regardless of outcome; the not-applicable ones stay null.
         Map<String, Object> outputs = new LinkedHashMap<>();
+        outputs.put("restOutcome", null);
+        outputs.put("result", null);
         outputs.put("statusCode", status);
         outputs.put("responseHeaders", result.headers());
+        outputs.put("restErrorCode", null);
+        outputs.put("restError", null);
+        outputs.put("restRawResponse", null);
 
         if (classified == StatusClassifier.Outcome.SUCCESS) {
             return mapSuccess(cfg, result, outputs);
