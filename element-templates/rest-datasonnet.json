@@ -1,0 +1,251 @@
+{
+  "$schema": "https://unpkg.com/@camunda/element-templates-json-schema/resources/schema.json",
+  "name": "REST DataSonnet Connector",
+  "id": "org.cibseven.community.connector.rest-datasonnet",
+  "version": 1,
+  "description": "Call a REST API with DataSonnet request/response/error mapping and a business-vs-system error model.",
+  "appliesTo": [
+    "bpmn:ServiceTask"
+  ],
+  "properties": [
+    {
+      "label": "Run as a job (asyncBefore)",
+      "description": "Required for the incident model: a system fault only becomes an incident when the task runs as a job. Also set the Retry Time Cycle to R0/PT0S so the incident is immediate.",
+      "type": "Hidden",
+      "value": "true",
+      "binding": {
+        "type": "property",
+        "name": "camunda:asyncBefore"
+      }
+    }
+  ],
+  "scopes": [
+    {
+      "type": "camunda:Connector",
+      "properties": [
+        {
+          "label": "Connector ID",
+          "type": "Hidden",
+          "value": "rest-datasonnet",
+          "binding": {
+            "type": "property",
+            "name": "connectorId"
+          }
+        },
+        {
+          "label": "Target URL",
+          "description": "Expression-driven, e.g. ${restBaseUrl}/orders",
+          "type": "String",
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "url"
+          },
+          "constraints": {
+            "notEmpty": true
+          }
+        },
+        {
+          "label": "HTTP method",
+          "type": "Dropdown",
+          "value": "GET",
+          "choices": [
+            { "name": "GET", "value": "GET" },
+            { "name": "POST", "value": "POST" },
+            { "name": "PUT", "value": "PUT" },
+            { "name": "PATCH", "value": "PATCH" },
+            { "name": "DELETE", "value": "DELETE" }
+          ],
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "method"
+          }
+        },
+        {
+          "label": "Source (input data)",
+          "description": "The process variable or expression holding the payload, e.g. ${input}",
+          "type": "String",
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "source"
+          },
+          "constraints": {
+            "notEmpty": true
+          }
+        },
+        {
+          "label": "Headers (expression to a Map)",
+          "description": "Optional. An expression resolving to a Map of headers, e.g. ${requestHeaders}.",
+          "type": "String",
+          "optional": true,
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "headers"
+          }
+        },
+        {
+          "label": "Request mapping (DataSonnet)",
+          "description": "Optional. Inline DataSonnet; transforms 'source' into the request body. Omit for identity passthrough.",
+          "type": "Text",
+          "optional": true,
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "requestMapping"
+          }
+        },
+        {
+          "label": "Response mapping (DataSonnet)",
+          "description": "Optional. Inline DataSonnet; transforms the 2xx body into 'result'.",
+          "type": "Text",
+          "optional": true,
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "responseMapping"
+          }
+        },
+        {
+          "label": "Error mapping (DataSonnet)",
+          "description": "Optional. Inline DataSonnet; transforms the error context into 'restError' (business errors only).",
+          "type": "Text",
+          "optional": true,
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "errorMapping"
+          }
+        },
+        {
+          "label": "Business error statuses",
+          "description": "Comma-separated non-2xx statuses that are business outcomes, e.g. 404,409. Everything else becomes a system-fault incident. Empty means every non-2xx is a fault.",
+          "type": "String",
+          "optional": true,
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "businessErrorStatuses"
+          }
+        },
+        {
+          "label": "Read timeout (ms)",
+          "type": "String",
+          "value": "30000",
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "readTimeout"
+          }
+        },
+        {
+          "label": "Retry count",
+          "type": "String",
+          "value": "3",
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "retryCount"
+          }
+        },
+        {
+          "label": "Retry delay (ms)",
+          "type": "String",
+          "value": "2000",
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "retryDelay"
+          }
+        },
+        {
+          "label": "Retryable statuses",
+          "type": "String",
+          "value": "408,429,500,502,503,504",
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "retryableStatuses"
+          }
+        },
+        {
+          "label": "Retry non-idempotent (POST/PATCH)",
+          "description": "Allow POST/PATCH to be retried on a read-timeout. Use only when the endpoint carries an idempotency key.",
+          "type": "Boolean",
+          "value": false,
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "retryNonIdempotent"
+          }
+        },
+        {
+          "label": "Max response bytes",
+          "type": "String",
+          "value": "10485760",
+          "binding": {
+            "type": "camunda:inputParameter",
+            "name": "maxResponseBytes"
+          }
+        },
+        {
+          "label": "Outcome variable",
+          "description": "SUCCESS | BUSINESS_ERROR | RESPONSE_MAPPING_FAILED",
+          "type": "String",
+          "value": "restOutcome",
+          "binding": {
+            "type": "camunda:outputParameter",
+            "source": "${restOutcome}"
+          }
+        },
+        {
+          "label": "Result variable",
+          "type": "String",
+          "value": "result",
+          "binding": {
+            "type": "camunda:outputParameter",
+            "source": "${result}"
+          }
+        },
+        {
+          "label": "Status code variable",
+          "type": "String",
+          "value": "statusCode",
+          "binding": {
+            "type": "camunda:outputParameter",
+            "source": "${statusCode}"
+          }
+        },
+        {
+          "label": "Response headers variable",
+          "type": "String",
+          "value": "responseHeaders",
+          "optional": true,
+          "binding": {
+            "type": "camunda:outputParameter",
+            "source": "${responseHeaders}"
+          }
+        },
+        {
+          "label": "Error code variable",
+          "type": "String",
+          "value": "restErrorCode",
+          "optional": true,
+          "binding": {
+            "type": "camunda:outputParameter",
+            "source": "${restErrorCode}"
+          }
+        },
+        {
+          "label": "Error variable",
+          "type": "String",
+          "value": "restError",
+          "optional": true,
+          "binding": {
+            "type": "camunda:outputParameter",
+            "source": "${restError}"
+          }
+        },
+        {
+          "label": "Raw response variable (response-mapping failure)",
+          "type": "String",
+          "value": "restRawResponse",
+          "optional": true,
+          "binding": {
+            "type": "camunda:outputParameter",
+            "source": "${restRawResponse}"
+          }
+        }
+      ]
+    }
+  ]
+}

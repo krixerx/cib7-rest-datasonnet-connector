@@ -98,23 +98,27 @@ catchable BPMN errors. Each REST call is modeled as an **embedded subprocess**:
 
 ## 3. The element template
 
-The connector ships a Camunda Modeler **element template** (`.json`) — a
-first-class deliverable, not a footnote. It pre-fills `connectorId` and every
-input / output parameter so the service task is configured in the Modeler's
-properties panel, not by hand-editing XML.
+The connector ships a Camunda Modeler **element template** —
+`element-templates/rest-datasonnet.json`, a first-class deliverable, not a
+footnote. It pre-fills `connectorId` and every input / output parameter so the
+service task is configured in the Modeler's properties panel, not by
+hand-editing XML.
 
-The template also sets, on the connector service task:
+The template sets `camunda:asyncBefore="true"` on the service task — so the
+connector runs as a job; without it a system fault would not become an incident
+(see [error-handling.md](error-handling.md) §7).
 
-- `asyncBefore="true"` — so the connector runs as a job; without it a system
-  fault would not become an incident (see [error-handling.md](error-handling.md) §7).
-- `failedJobRetryTimeCycle="R0/PT0S"` — so a system fault surfaces as an
-  **immediate** incident with no wasted job retries.
+> **One manual step.** A Camunda 7 element template cannot bind
+> `failedJobRetryTimeCycle`, so the template cannot ship it. After applying the
+> template, set the service task's **Retry Time Cycle** to `R0/PT0S` in the
+> Modeler — that makes a system fault an *immediate* incident with no wasted job
+> retries. Without it, the engine's default 3 retries run first.
 
 A copy-paste **wrapper-subprocess fragment** ships alongside it: a ready-made
 embedded subprocess with the gateway and Error End Events to drop in and
-retarget. This is the v1 (Approach A) answer to the boilerplate. Milestone 2
-replaces the copy-paste fragment with a reusable Call Activity — see
-[roadmap.md](roadmap.md).
+retarget. `samples/order-sync.bpmn` is a worked example of the whole pattern.
+This is the v1 (Approach A) answer to the boilerplate. Milestone 2 replaces the
+copy-paste fragment with a reusable Call Activity — see [roadmap.md](roadmap.md).
 
 ---
 
