@@ -27,12 +27,36 @@
     target CIB7 version (tracked in docs/roadmap.md "Open items"):
       * the CIB seven Connect SPI module (AbstractConnector, ConnectorProvider)
       * org.apache.httpcomponents.client5:httpclient5   => scope: provided
-      * com.datasonnet:datasonnet-mapper                => pin the version
       * WireMock                                        => scope: test
-    StatusClassifier and its tests need none of these, so the module builds
-    green today on JUnit 5 alone.
+    The CIB7 Connect SPI artifact is the blocker for the connector/SPI classes;
+    StatusClassifier and DataSonnetMapper need none of it.
   -->
   <dependencies>
+    <!--
+      datasonnet-mapper 2.5.2: latest stable in the javax-compatible 2.x line.
+      The final version pin is a roadmap open item (confirm against the engine's
+      Jackson version). The Mapper API used here is stable across 2.x.
+    -->
+    <dependency>
+      <groupId>com.datasonnet</groupId>
+      <artifactId>datasonnet-mapper</artifactId>
+      <version>2.5.2</version>
+    </dependency>
+
+    <!--
+      DataSonnet 2.5.x's Java format plugin references javax.xml.bind (JAXB),
+      which was removed from the JDK in Java 11. Bundle the javax-namespaced
+      JAXB runtime so the connector works on Java 11+. If the target CIB7
+      engine already provides JAXB on its classpath, switch this to 'provided'
+      (tracked in docs/roadmap.md).
+    -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>2.3.1</version>
+      <scope>runtime</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
