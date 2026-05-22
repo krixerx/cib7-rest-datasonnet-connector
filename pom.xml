@@ -21,6 +21,7 @@
     <maven.compiler.release>11</maven.compiler.release>
     <cibseven.version>2.1.0</cibseven.version>
     <datasonnet.version>2.5.2</datasonnet.version>
+    <httpclient5.version>5.5</httpclient5.version>
     <junit.version>5.11.3</junit.version>
   </properties>
 
@@ -40,13 +41,17 @@
     </dependency>
 
     <!--
-      Apache HttpClient 5.5: the version CIB seven ships (docs/design.md section 4).
-      provided scope: not bundled; the engine supplies it on its classpath.
+      Apache HttpClient 5.5, pinned via the httpclient5.version property.
+      Verified as the version CIB seven 2.1.0 ships: cibseven-parent 2.1.0 sets
+      version.httpclient5 = 5.5. provided scope: the connector compiles against
+      it but does not bundle it — it relies on httpclient5 already being on the
+      CIB seven engine classpath, where the engine's own connect modules put it
+      (docs/design.md section 4).
     -->
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
       <artifactId>httpclient5</artifactId>
-      <version>5.5</version>
+      <version>${httpclient5.version}</version>
       <scope>provided</scope>
     </dependency>
 

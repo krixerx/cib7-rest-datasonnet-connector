@@ -72,8 +72,6 @@ connector, not a replacement for it.
       adopter needs it.
 - [ ] **Maven publishing namespace.** `org.cibseven.community` needs CIB seven
       community-hub coordination; otherwise an owned `io.github.<user>` namespace.
-- [ ] **Pin the minimum compatible `httpclient5` version** — it is `provided`
-      scope; document the shared-engine classpath assumption.
 - [ ] **Jackson dependency convergence** — Maven Enforcer `dependencyConvergence`
       check in CI; pin and document the tested Jackson version; shade DataSonnet's
       Jackson as a fallback. See [design.md](design.md) §11.
@@ -103,6 +101,10 @@ connector, not a replacement for it.
   javax-namespace 2.x line (matching CIB seven 2.x's javax engine), via the
   `datasonnet.version` property. The process-level test confirmed its Jackson
   coexists with the engine's — the broader convergence check stays its own item.
+- ~~Pin the `httpclient5` version~~ → **5.5**, via the `httpclient5.version`
+  property. Verified as the version CIB seven 2.1.0 ships — `cibseven-parent`
+  2.1.0 sets `version.httpclient5` = 5.5. `provided` scope: relies on
+  httpclient5 being on the engine classpath, where the connect modules put it.
 - ~~Inline vs `classpath:` default~~ → **inline**.
 - ~~Delegate to the built-in `http-connector` vs own the client~~ → **the
   connector instance owns the client**.
