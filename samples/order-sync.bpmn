@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  rest-datasonnet connector - sample process "orderSync".
+
+  Demonstrates the connector in a service task with inline DataSonnet request,
+  response, and error mapping, wrapped in the embedded subprocess that converts
+  the connector's data outcomes into catchable BPMN errors. See docs/design.md
+  section 5 and docs/bpmn-modeling.md.
+
+  This file has no <bpmndi:> diagram-interchange section, so it carries no
+  visual layout. The engine does not need it; a Modeler auto-arranges the
+  shapes on open. It is a wiring reference and an engine-deployable sample.
+
+  NOT yet engine-verified: the rest-datasonnet connector is still being built.
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="rest-datasonnet-sample"
+                  targetNamespace="http://cibseven.org/community/examples">
+
+  <!-- One <bpmn:error> per business-error code the wrapper routes: a
+       REST_ERROR_<status> per declared businessErrorStatuses, plus
+       REST_ERROR_RESPONSE_MAPPING for the response-mapping-failure path. -->
+  <bpmn:error id="err404" name="REST_ERROR_404" errorCode="REST_ERROR_404"/>
+  <bpmn:error id="err409" name="REST_ERROR_409" errorCode="REST_ERROR_409"/>
+  <bpmn:error id="errRespMap" name="REST_ERROR_RESPONSE_MAPPING"
+              errorCode="REST_ERROR_RESPONSE_MAPPING"/>
+
+  <bpmn:process id="orderSync" isExecutable="true">
+
+    <bpmn:startEvent id="pStart"/>
+    <bpmn:sequenceFlow id="f1" sourceRef="pStart" targetRef="callOrderApi"/>
+
+    <!-- ================================================================ -->
+    <!-- Embedded subprocess: one logical REST call + outcome routing.     -->
+    <!-- ================================================================ -->
+    <bpmn:subProcess id="callOrderApi" name="Call Order API">
+
+      <bpmn:startEvent id="s1"/>
+      <bpmn:sequenceFlow id="f2" sourceRef="s1" targetRef="invokeOrderApi"/>
+
+      <!-- ===== the connector service task ===== -->
+      <bpmn:serviceTask id="invokeOrderApi" name="Call Order API"
+                        camunda:asyncBefore="true">
+        <bpmn:extensionElements>
+
+          <!-- D5/A4: makes a system/mapping failure an immediate incident
+               (the task is a job, with zero job-level retries to burn). -->
+          <camunda:failedJobRetryTimeCycle>R0/PT0S</camunda:failedJobRetryTimeCycle>
+
+          <camunda:connector>
+            <camunda:connectorId>rest-datasonnet</camunda:connectorId>
+            <camunda:inputOutput>
+
+              <!-- request shape -->
+              <camunda:inputParameter name="url">${restBaseUrl}/orders</camunda:inputParameter>
+              <camunda:inputParameter name="method">POST</camunda:inputParameter>
+              <camunda:inputParameter name="source">${orderInput}</camunda:inputParameter>
+              <camunda:inputParameter name="headers">
+                <camunda:map>
+                  <camunda:entry key="Content-Type">application/json</camunda:entry>
+                  <camunda:entry key="Authorization">Bearer ${apiToken}</camunda:entry>
+                </camunda:map>
+              </camunda:inputParameter>
+
+              <!-- REQUEST data mapping: orderInput (as payload) -> request body -->
+              <camunda:inputParameter name="requestMapping"><![CDATA[
+/** DataSonnet version=2.0 */
+{
+  customerId: payload.customer.id,
+  lines: payload.items map (item) {
+    sku: item.code,
+    quantity: item.qty
+  }
+}
+]]></camunda:inputParameter>
+
+              <!-- RESPONSE data mapping: 2xx body (as payload) -> result -->
+              <camunda:inputParameter name="responseMapping"><![CDATA[
+/** DataSonnet version=2.0 */
+{
+  orderId: payload.id,
+  state: payload.status,
+  confirmedAt: ds.datetime.now()
+}
+]]></camunda:inputParameter>
+
+              <!-- ERROR data mapping: error context (as payload) -> restError -->
+              <camunda:inputParameter name="errorMapping"><![CDATA[
+/** DataSonnet version=2.0 */
+{
+  failed: true,
+  status: payload.status,
+  reason:
+    if payload.status == 404 then "Customer not found"
+    else if payload.status == 409 then "Order already exists"
+    else "Order rejected (" + payload.status + ")",
+  detail: payload.body
+}
+]]></camunda:inputParameter>
+
+              <!-- non-2xx statuses that count as BUSINESS outcomes; everything
+                   else (401, 500, network, ...) becomes a system-fault incident -->
+              <camunda:inputParameter name="businessErrorStatuses">404,409</camunda:inputParameter>
+
+              <camunda:inputParameter name="connectTimeout">5000</camunda:inputParameter>
+              <camunda:inputParameter name="readTimeout">30000</camunda:inputParameter>
+              <camunda:inputParameter name="retryCount">3</camunda:inputParameter>
+              <camunda:inputParameter name="maxResponseBytes">10485760</camunda:inputParameter>
+
+              <!-- outputs: connector response values -> process variables -->
+              <camunda:outputParameter name="restOutcome">${restOutcome}</camunda:outputParameter>
+              <camunda:outputParameter name="orderResult">${result}</camunda:outputParameter>
+              <camunda:outputParameter name="statusCode">${statusCode}</camunda:outputParameter>
+              <camunda:outputParameter name="restErrorCode">${restErrorCode}</camunda:outputParameter>
+              <camunda:outputParameter name="restError">${restError}</camunda:outputParameter>
+              <camunda:outputParameter name="restRawResponse">${restRawResponse}</camunda:outputParameter>
+
+            </camunda:inputOutput>
+          </camunda:connector>
+        </bpmn:extensionElements>
+      </bpmn:serviceTask>
+
+      <bpmn:sequenceFlow id="f3" sourceRef="invokeOrderApi" targetRef="gwOutcome"/>
+
+      <!-- route on restOutcome: the connector returns exactly one of three -->
+      <bpmn:exclusiveGateway id="gwOutcome" name="restOutcome?"/>
+      <bpmn:sequenceFlow id="f4" sourceRef="gwOutcome" targetRef="subDone">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+          >${restOutcome == 'SUCCESS'}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="f5" sourceRef="gwOutcome" targetRef="gwCode">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+          >${restOutcome == 'BUSINESS_ERROR'}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="f6" sourceRef="gwOutcome" targetRef="endRespMap">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+          >${restOutcome == 'RESPONSE_MAPPING_FAILED'}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+
+      <!-- route on restErrorCode: branches match businessErrorStatuses (404, 409) -->
+      <bpmn:exclusiveGateway id="gwCode" name="restErrorCode?"/>
+      <bpmn:sequenceFlow id="f7" sourceRef="gwCode" targetRef="end404">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+          >${restErrorCode == 'REST_ERROR_404'}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="f8" sourceRef="gwCode" targetRef="end409">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"
+          >${restErrorCode == 'REST_ERROR_409'}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+
+      <bpmn:endEvent id="subDone"/>
+      <bpmn:endEvent id="end404">
+        <bpmn:errorEventDefinition id="ed404" errorRef="err404"/>
+      </bpmn:endEvent>
+      <bpmn:endEvent id="end409">
+        <bpmn:errorEventDefinition id="ed409" errorRef="err409"/>
+      </bpmn:endEvent>
+      <bpmn:endEvent id="endRespMap">
+        <bpmn:errorEventDefinition id="edRm" errorRef="errRespMap"/>
+      </bpmn:endEvent>
+
+    </bpmn:subProcess>
+
+    <bpmn:sequenceFlow id="f9" sourceRef="callOrderApi" targetRef="pDone"/>
+    <bpmn:endEvent id="pDone"/>
+
+    <!-- error boundary events on the subprocess: catch what the Error End
+         Events threw, route each to its handler -->
+    <bpmn:boundaryEvent id="b404" attachedToRef="callOrderApi">
+      <bpmn:errorEventDefinition id="bed404" errorRef="err404"/>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="b409" attachedToRef="callOrderApi">
+      <bpmn:errorEventDefinition id="bed409" errorRef="err409"/>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="bRespMap" attachedToRef="callOrderApi">
+      <bpmn:errorEventDefinition id="bedRm" errorRef="errRespMap"/>
+    </bpmn:boundaryEvent>
+
+    <bpmn:sequenceFlow id="f10" sourceRef="b404" targetRef="handleNotFound"/>
+    <bpmn:sequenceFlow id="f11" sourceRef="b409" targetRef="handleConflict"/>
+    <bpmn:sequenceFlow id="f12" sourceRef="bRespMap" targetRef="handleRecovery"/>
+
+    <bpmn:userTask id="handleNotFound" name="Handle customer not found"/>
+    <bpmn:userTask id="handleConflict" name="Handle duplicate order"/>
+    <!-- restRawResponse holds the raw 2xx body so recovery does not re-submit -->
+    <bpmn:userTask id="handleRecovery" name="Manual recovery (order WAS created)"/>
+
+    <bpmn:sequenceFlow id="f13" sourceRef="handleNotFound" targetRef="pHandled"/>
+    <bpmn:sequenceFlow id="f14" sourceRef="handleConflict" targetRef="pHandled"/>
+    <bpmn:sequenceFlow id="f15" sourceRef="handleRecovery" targetRef="pHandled"/>
+    <bpmn:endEvent id="pHandled"/>
+
+  </bpmn:process>
+</bpmn:definitions>
