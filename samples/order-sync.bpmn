@@ -104,7 +104,6 @@
                    else (401, 500, network, ...) becomes a system-fault incident -->
               <camunda:inputParameter name="businessErrorStatuses">404,409</camunda:inputParameter>
 
-              <camunda:inputParameter name="connectTimeout">5000</camunda:inputParameter>
               <camunda:inputParameter name="readTimeout">30000</camunda:inputParameter>
               <camunda:inputParameter name="retryCount">3</camunda:inputParameter>
               <camunda:inputParameter name="maxResponseBytes">10485760</camunda:inputParameter>

@@ -89,8 +89,8 @@ connection pooling, TLS 1.2/1.3, and full timeout control.
 **The connector instance builds and owns its own `CloseableHttpClient`** rather
 than delegating to the built-in `HttpConnector` facade. The facade is a shared,
 engine-managed singleton with a fixed client; it cannot honour the per-task
-`connectTimeout` / `readTimeout` parameters that [configuration.md](configuration.md)
-exposes. Owning the client is cheap: `httpclient5` is already on the classpath,
+`readTimeout` that [configuration.md](configuration.md) §3 exposes. Owning the
+client is cheap: `httpclient5` is already on the classpath,
 so it is a `provided`-scope compile dependency, **zero new runtime jars**.
 
 - **Ownership.** The **connector instance** holds the client, not the provider.
@@ -101,8 +101,11 @@ so it is a `provided`-scope compile dependency, **zero new runtime jars**.
   defaults (`maxTotal` ≈ 100, `maxPerRoute` ≈ 20), not HttpClient's low defaults,
   overridable by a system property. Idle- and expired-connection eviction is
   enabled so the pool self-heals.
-- **Per-call config.** Each invocation gets a `RequestConfig` carrying that
-  task's `connectTimeout` / `readTimeout`.
+- **Timeouts.** `readTimeout` is per task: each invocation gets a `RequestConfig`
+  with `responseTimeout` set from it. `connectTimeout` is not per task — Apache
+  HttpClient 5.x sets the TCP-connect timeout on the connection manager, so the
+  connector applies one connect timeout (default 5000 ms, system-property
+  overridable) to the whole pooled client. See [configuration.md](configuration.md) §3.
 - **Redirects.** Cross-host redirects are not followed (see §9).
 - **Lifecycle.** The pooled client is engine-lifetime scoped. Explicit shutdown
   is a minor open item ([roadmap.md](roadmap.md)).

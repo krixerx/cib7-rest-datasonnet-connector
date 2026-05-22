@@ -19,8 +19,7 @@ The Modeler element template pre-fills these (see [bpmn-modeling.md](bpmn-modeli
 | `responseMapping` | String | DataSonnet script for the 2xx body. Optional. |
 | `errorMapping` | String | DataSonnet script for the error context. Optional. |
 | `businessErrorStatuses` | String | Comma-separated non-2xx statuses that are business outcomes for this call (e.g. `404,409`). **Default empty** — every non-2xx is a system fault until you opt it in. See [error-handling.md](error-handling.md) §1. |
-| `connectTimeout` | Integer (ms) | Per-attempt connect timeout. Default `5000`. |
-| `readTimeout` | Integer (ms) | Per-attempt read timeout. Default `30000`. |
+| `readTimeout` | Integer (ms) | Per-request response timeout. Default `30000`. |
 | `retryCount` | Integer | In-task retry attempts. Default `3`. |
 | `retryDelay` | Integer (ms) | Delay between in-task retries. Default `2000`. |
 | `retryableStatuses` | String | Comma-separated. Default `408,429,500,502,503,504`. |
@@ -67,8 +66,17 @@ there is no response and no output variables (the engine raises an incident).
 
 ## 3. Retry & timeout model
 
-Three knobs: per-attempt socket timeouts (`connectTimeout` / `readTimeout`), the
-pause between retries (`retryDelay`), and the attempt count (`retryCount`).
+Per-task knobs: `readTimeout` (the per-request response timeout), `retryDelay`,
+and `retryCount`. The connect timeout is connector-level, not per task — see
+below.
+
+### Connect timeout
+
+Apache HttpClient 5.x sets the TCP-connect timeout on the connection manager,
+not per request. So the connector applies a single connect timeout to its whole
+pooled client; it is **not** a per-task input parameter. The default is 5000 ms,
+overridable engine-wide via a JVM system property on the connector module.
+`readTimeout` — the timeout that genuinely varies per call — stays per task.
 
 ### What is retried
 
