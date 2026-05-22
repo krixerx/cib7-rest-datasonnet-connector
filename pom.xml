@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.cibseven.community</groupId>
+  <artifactId>rest-datasonnet-connector</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>rest-datasonnet connector</name>
+  <description>
+    CIB seven (Camunda 7 fork) Connect SPI connector for calling external REST
+    APIs with DataSonnet request/response/error mapping and a business-vs-system
+    error model. See docs/ for the reviewed design.
+  </description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>11</maven.compiler.release>
+    <junit.version>5.11.3</junit.version>
+  </properties>
+
+  <!--
+    DEPENDENCIES STILL TO ADD, once the coordinates are confirmed against the
+    target CIB7 version (tracked in docs/roadmap.md "Open items"):
+      * the CIB seven Connect SPI module (AbstractConnector, ConnectorProvider)
+      * org.apache.httpcomponents.client5:httpclient5   => scope: provided
+      * com.datasonnet:datasonnet-mapper                => pin the version
+      * WireMock                                        => scope: test
+    StatusClassifier and its tests need none of these, so the module builds
+    green today on JUnit 5 alone.
+  -->
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>
