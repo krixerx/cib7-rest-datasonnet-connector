@@ -85,8 +85,10 @@ connector, not a replacement for it.
 - [ ] **HttpClient shutdown** — the owned client is engine-lifetime scoped with
       idle eviction; decide whether to also close it on engine shutdown. Low
       priority.
-- [ ] **CI/CD & distribution** — GitHub Actions: build + test on every PR, publish
-      to Maven Central on a release tag. Required before the first public release.
+- [ ] **Publish to Maven Central** — a release workflow that GPG-signs and
+      publishes the jar on a version tag. Needs a Central Portal account and a
+      signing key configured as repository secrets. (Build + test CI is done —
+      `.github/workflows/ci.yml`, a Java 11 + 17 matrix.)
 - [ ] **Multi-format request/response bodies (XML, CSV)** — v1 is JSON-only;
       captured with full context in `TODOS.md`.
 
