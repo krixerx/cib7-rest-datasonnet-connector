@@ -9,7 +9,7 @@
 |---|---|
 | Status | Draft / Design — reviewed (office hours + eng review, 2026-05-22) |
 | Date | 2026-05-22 |
-| Target engine | CIB seven (Camunda 7 fork) — verified against the Connect SPI |
+| Target engine | CIB seven 2.1.0 (Camunda 7 fork) |
 | Connector ID | `rest-datasonnet` |
 | Maven module | `rest-datasonnet-connector` |
 | Java package | `org.cibseven.community.connector.rest` |
@@ -175,16 +175,19 @@ A non-2xx system fault or a post-retry transport failure throws a
 **Service-loader registration:**
 
 ```
-META-INF/services/org.camunda.connect.spi.ConnectorProvider
+META-INF/services/org.cibseven.connect.spi.ConnectorProvider
   -> org.cibseven.community.connector.rest.RestDataSonnetConnectorProvider
 ```
 
 The `cibseven-engine-plugin-connect` process-engine plugin must be active for
 `<camunda:connector>` parsing.
 
-> **SPI namespace caveat:** CIB seven 1.x keeps the SPI under
-> `org.camunda.connect.spi`. On 2.x, verify whether it moved to
-> `org.cibseven.connect.spi` — only the `import`s change.
+> **SPI namespace (confirmed for CIB seven 2.1.0):** the SPI lives under
+> `org.cibseven.connect.*` — `AbstractConnector` / `AbstractConnectorRequest` /
+> `AbstractConnectorResponse` in `org.cibseven.connect.impl`, `ConnectorProvider`
+> in `org.cibseven.connect.spi`, `ConnectorException` in `org.cibseven.connect`.
+> The Maven artifact is `org.cibseven.connect:cibseven-connect-core:2.1.0`. (The
+> CIB seven 1.x line kept the old `org.camunda.connect.*` namespace.)
 
 **Concurrency:** the Connect registry creates one connector instance and reuses
 it across all job-executor threads. The `CloseableHttpClient` is thread-safe; the

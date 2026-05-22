@@ -23,14 +23,24 @@
   </properties>
 
   <!--
-    DEPENDENCIES STILL TO ADD, once confirmed against the target CIB7 version
-    (tracked in docs/roadmap.md "Open items"):
-      * the CIB seven Connect SPI module (AbstractConnector, ConnectorProvider)
-      * WireMock => scope: test, for the connector- and process-level tests
-    The CIB7 Connect SPI artifact is the blocker for the connector/SPI classes;
-    the three helper classes need none of it.
+    STILL TO ADD: WireMock (scope: test) for the connector- and process-level
+    tests, once the SPI classes exist. The helper classes are tested without it.
   -->
   <dependencies>
+    <!--
+      CIB seven Connect SPI (cibseven-connect-core 2.1.0): AbstractConnector,
+      ConnectorProvider, ConnectorException, under the org.cibseven.connect.*
+      namespace (CIB seven 2.x; the 1.x line used org.camunda.connect.*).
+      provided scope: the engine supplies it. Pinned to CIB seven 2.1.0 — the
+      version the other CIB seven plugins in this workspace target.
+    -->
+    <dependency>
+      <groupId>org.cibseven.connect</groupId>
+      <artifactId>cibseven-connect-core</artifactId>
+      <version>2.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!--
       Apache HttpClient 5.5: the version CIB seven ships (docs/design.md section 4).
       provided scope: not bundled; the engine supplies it on its classpath.

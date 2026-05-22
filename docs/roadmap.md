@@ -72,9 +72,6 @@ connector, not a replacement for it.
       adopter needs it.
 - [ ] **Maven publishing namespace.** `org.cibseven.community` needs CIB seven
       community-hub coordination; otherwise an owned `io.github.<user>` namespace.
-- [ ] **Confirm the CIB seven version + Connect SPI package namespace** —
-      `org.camunda.connect.spi` on 1.x; verify 2.x.
-- [ ] **Confirm the Connect SPI artifact coordinates** for the target CIB7 version.
 - [ ] **Pin the minimum compatible `httpclient5` version** — it is `provided`
       scope; document the shared-engine classpath assumption.
 - [ ] **Pin the `datasonnet-mapper` version** — it brings the Scala runtime +
@@ -97,6 +94,11 @@ connector, not a replacement for it.
 
 ## Resolved — locked by the office-hours and eng-review sessions (2026-05-22)
 
+- ~~Confirm the CIB seven version + Connect SPI namespace~~ → **CIB seven 2.1.0**;
+  the SPI is the `org.cibseven.connect.*` namespace (the 2.x line moved off
+  `org.camunda.connect.*`).
+- ~~Confirm the Connect SPI artifact coordinates~~ →
+  **`org.cibseven.connect:cibseven-connect-core:2.1.0`** (on Maven Central).
 - ~~Inline vs `classpath:` default~~ → **inline**.
 - ~~Delegate to the built-in `http-connector` vs own the client~~ → **the
   connector instance owns the client**.
