@@ -153,9 +153,8 @@ open items.
 
 ## License
 
-Not yet specified. This is intended as an open-source community extension for
-CIB seven; a license (Apache-2.0 is the norm for this ecosystem) will be added
-before the first release.
+[Apache License 2.0](LICENSE) — a permissive open-source license, and the norm
+across the Camunda / CIB seven ecosystem.
 
 ## Contributing
 
