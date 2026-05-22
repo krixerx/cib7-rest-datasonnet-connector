@@ -19,13 +19,10 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>11</maven.compiler.release>
+    <cibseven.version>2.1.0</cibseven.version>
     <junit.version>5.11.3</junit.version>
   </properties>
 
-  <!--
-    STILL TO ADD: WireMock (scope: test) for the connector- and process-level
-    tests, once the SPI classes exist. The helper classes are tested without it.
-  -->
   <dependencies>
     <!--
       CIB seven Connect SPI (cibseven-connect-core 2.1.0): AbstractConnector,
@@ -37,7 +34,7 @@
     <dependency>
       <groupId>org.cibseven.connect</groupId>
       <artifactId>cibseven-connect-core</artifactId>
-      <version>2.1.0</version>
+      <version>${cibseven.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -81,6 +78,43 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!--
+      Process-level test stack (test scope): an in-memory CIB seven engine, the
+      Connect process-engine plugin that parses and runs <camunda:connector>,
+      the JUnit 5 ProcessEngineExtension, the BPMN assertions, and H2 as the
+      in-memory database.
+    -->
+    <dependency>
+      <groupId>org.cibseven.bpm</groupId>
+      <artifactId>cibseven-engine</artifactId>
+      <version>${cibseven.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.cibseven.bpm</groupId>
+      <artifactId>cibseven-engine-plugin-connect</artifactId>
+      <version>${cibseven.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.cibseven.bpm</groupId>
+      <artifactId>cibseven-bpm-junit5</artifactId>
+      <version>${cibseven.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.cibseven.bpm</groupId>
+      <artifactId>cibseven-bpm-assert</artifactId>
+      <version>${cibseven.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>2.2.224</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
