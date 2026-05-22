@@ -23,15 +23,25 @@
   </properties>
 
   <!--
-    DEPENDENCIES STILL TO ADD, once the coordinates are confirmed against the
-    target CIB7 version (tracked in docs/roadmap.md "Open items"):
+    DEPENDENCIES STILL TO ADD, once confirmed against the target CIB7 version
+    (tracked in docs/roadmap.md "Open items"):
       * the CIB seven Connect SPI module (AbstractConnector, ConnectorProvider)
-      * org.apache.httpcomponents.client5:httpclient5   => scope: provided
-      * WireMock                                        => scope: test
+      * WireMock => scope: test, for the connector- and process-level tests
     The CIB7 Connect SPI artifact is the blocker for the connector/SPI classes;
-    StatusClassifier and DataSonnetMapper need none of it.
+    the three helper classes need none of it.
   -->
   <dependencies>
+    <!--
+      Apache HttpClient 5.5: the version CIB seven ships (docs/design.md section 4).
+      provided scope: not bundled; the engine supplies it on its classpath.
+    -->
+    <dependency>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <version>5.5</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!--
       datasonnet-mapper 2.5.2: latest stable in the javax-compatible 2.x line.
       The final version pin is a roadmap open item (confirm against the engine's
