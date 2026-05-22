@@ -74,8 +74,6 @@ connector, not a replacement for it.
       community-hub coordination; otherwise an owned `io.github.<user>` namespace.
 - [ ] **Pin the minimum compatible `httpclient5` version** — it is `provided`
       scope; document the shared-engine classpath assumption.
-- [ ] **Pin the `datasonnet-mapper` version** — it brings the Scala runtime +
-      sjsonnet; confirm against the Jackson convergence item.
 - [ ] **Jackson dependency convergence** — Maven Enforcer `dependencyConvergence`
       check in CI; pin and document the tested Jackson version; shade DataSonnet's
       Jackson as a fallback. See [design.md](design.md) §11.
@@ -101,6 +99,10 @@ connector, not a replacement for it.
   `org.camunda.connect.*`).
 - ~~Confirm the Connect SPI artifact coordinates~~ →
   **`org.cibseven.connect:cibseven-connect-core:2.1.0`** (on Maven Central).
+- ~~Pin the `datasonnet-mapper` version~~ → **2.5.2**, the latest stable in the
+  javax-namespace 2.x line (matching CIB seven 2.x's javax engine), via the
+  `datasonnet.version` property. The process-level test confirmed its Jackson
+  coexists with the engine's — the broader convergence check stays its own item.
 - ~~Inline vs `classpath:` default~~ → **inline**.
 - ~~Delegate to the built-in `http-connector` vs own the client~~ → **the
   connector instance owns the client**.

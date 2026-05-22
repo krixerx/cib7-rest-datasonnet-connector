@@ -20,6 +20,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>11</maven.compiler.release>
     <cibseven.version>2.1.0</cibseven.version>
+    <datasonnet.version>2.5.2</datasonnet.version>
     <junit.version>5.11.3</junit.version>
   </properties>
 
@@ -50,14 +51,17 @@
     </dependency>
 
     <!--
-      datasonnet-mapper 2.5.2: latest stable in the javax-compatible 2.x line.
-      The final version pin is a roadmap open item (confirm against the engine's
-      Jackson version). The Mapper API used here is stable across 2.x.
+      datasonnet-mapper, pinned to 2.5.2 via the datasonnet.version property:
+      the latest stable release in the javax-namespace 2.x line, matching CIB
+      seven 2.x's javax cibseven-engine (the 2.5.x-jakarta4 builds target the
+      Jakarta variant instead). It transitively brings the Scala runtime,
+      sjsonnet, and Jackson; the process-level test runs it alongside the
+      engine's own Jackson with no clash.
     -->
     <dependency>
       <groupId>com.datasonnet</groupId>
       <artifactId>datasonnet-mapper</artifactId>
-      <version>2.5.2</version>
+      <version>${datasonnet.version}</version>
     </dependency>
 
     <!--
