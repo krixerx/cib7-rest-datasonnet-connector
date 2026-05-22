@@ -72,9 +72,6 @@ connector, not a replacement for it.
       adopter needs it.
 - [ ] **Maven publishing namespace.** `org.cibseven.community` needs CIB seven
       community-hub coordination; otherwise an owned `io.github.<user>` namespace.
-- [ ] **Jackson dependency convergence** — Maven Enforcer `dependencyConvergence`
-      check in CI; pin and document the tested Jackson version; shade DataSonnet's
-      Jackson as a fallback. See [design.md](design.md) §11.
 - [ ] **Confirm Spin input resolution** — verify against a CIB7 engine whether
       `<camunda:inputParameter>` hands the connector a `SpinJsonNode` or a String,
       so `DataSonnetMapper`'s defensive handling is built for the real shape.
@@ -105,6 +102,11 @@ connector, not a replacement for it.
   property. Verified as the version CIB seven 2.1.0 ships — `cibseven-parent`
   2.1.0 sets `version.httpclient5` = 5.5. `provided` scope: relies on
   httpclient5 being on the engine classpath, where the connect modules put it.
+- ~~Jackson dependency convergence~~ → Jackson **pinned to 2.15.0** via an
+  imported `jackson-bom` (the `jackson.version` property); a maven-enforcer
+  `dependencyConvergence` rule fails the build on any version split, with
+  DataSonnet's third-party Scala / sjsonnet tree excluded. Shading DataSonnet's
+  Jackson stays an unused fallback.
 - ~~Inline vs `classpath:` default~~ → **inline**.
 - ~~Delegate to the built-in `http-connector` vs own the client~~ → **the
   connector instance owns the client**.

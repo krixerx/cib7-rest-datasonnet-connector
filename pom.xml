@@ -22,8 +22,29 @@
     <cibseven.version>2.1.0</cibseven.version>
     <datasonnet.version>2.5.2</datasonnet.version>
     <httpclient5.version>5.5</httpclient5.version>
+    <jackson.version>2.15.0</jackson.version>
     <junit.version>5.11.3</junit.version>
   </properties>
+
+  <!--
+    Pin every Jackson artifact to one version. datasonnet-mapper 2.5.2 brings
+    Jackson 2.15.0 transitively (jackson-core / databind / annotations plus the
+    csv, yaml and properties dataformats); importing the matching jackson-bom
+    locks them, so a future datasonnet bump cannot silently split the Jackson
+    version across the tree. 2.15.0 is the version the connector is built and
+    tested against. The maven-enforcer dependencyConvergence rule guards it.
+  -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!--
@@ -127,6 +148,42 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.5.2</version>
+      </plugin>
+      <!--
+        Fail the build if a transitive dependency pulls a conflicting version
+        of an artifact already on the tree — the guard for the Jackson pin
+        above. Runs in the validate phase, so CI catches a split early.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>enforce-dependency-convergence</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <dependencyConvergence>
+                  <!--
+                    Exclude datasonnet-mapper's transitive Scala / sjsonnet
+                    runtime — a third-party tree whose internal version spread
+                    (scala-library, geny) we neither control nor police.
+                    Everything else, Jackson above all, must converge.
+                  -->
+                  <excludes>
+                    <exclude>org.scala-lang:*</exclude>
+                    <exclude>org.scala-lang.modules:*</exclude>
+                    <exclude>com.lihaoyi:*</exclude>
+                  </excludes>
+                </dependencyConvergence>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

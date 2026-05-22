@@ -275,8 +275,10 @@ CI/CD and the publishing channel are tracked in [roadmap.md](roadmap.md).
    this shapes the whole error model (§5).
 2. **DataSonnet dependency weight** — Scala + sjsonnet + Jackson on the engine
    classpath. A Jackson clash with the engine / Spin is the concrete danger.
-   Mitigation: a Maven Enforcer `dependencyConvergence` check in CI, a pinned
-   tested Jackson version; shade DataSonnet's Jackson if convergence fails.
+   Mitigated: Jackson is pinned to 2.15.0 via an imported `jackson-bom`, and a
+   Maven Enforcer `dependencyConvergence` rule fails the build on any version
+   split (DataSonnet's third-party Scala tree excluded). Shading DataSonnet's
+   Jackson stays an unused fallback for a future engine-side clash.
 3. **Spin ↔ DataSonnet boundary** — `DataSonnetMapper` serializes a
    `SpinJsonNode` input to String; the input-resolution shape is confirmed
    against a CIB7 engine (open item, [roadmap.md](roadmap.md)).
