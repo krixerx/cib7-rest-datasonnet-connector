@@ -102,10 +102,10 @@ A request mapping:
 /** DataSonnet version=2.0 */
 {
   customerId: payload.customer.id,
-  lines: payload.items map (item) {
+  lines: std.map(function(item) {
     sku: item.code,
     quantity: item.qty
-  }
+  }, payload.items)
 }
 ```
 

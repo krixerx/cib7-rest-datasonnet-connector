@@ -25,7 +25,7 @@ local amount =
 {
   customerId: payload.applicant.id,
   amount: amount,
-  items: payload.lineItems map (i) { sku: i.code, qty: i.quantity }
+  items: std.map(function(i) { sku: i.code, qty: i.quantity }, payload.lineItems)
 }
 ```
 
